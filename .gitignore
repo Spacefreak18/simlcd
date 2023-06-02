@@ -1,0 +1,5 @@
+/build
+/src/simlcd/tags
+
+/src/simlcd/simulatorapi/simapi
+/src/simlcd/fbgfx

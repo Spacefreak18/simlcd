@@ -1,0 +1,6 @@
+[submodule "src/simlcd/simulatorapi/simapi"]
+	path = src/simlcd/simulatorapi/simapi
+	url = https://github.com/Spacefreak18/simapi
+[submodule "src/simlcd/fbgfx"]
+	path = src/simlcd/fbgfx
+	url = https://github.com/Spacefreak18/fbgfx
