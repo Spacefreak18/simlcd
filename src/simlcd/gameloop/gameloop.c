@@ -274,13 +274,15 @@ int looper()
 
         strftime(date, sizeof(date), "%Y.%m.%d", &tm);
 
-        char gear = simdata->gear + 48;
+        char gear[2];
+        gear[0] = simdata->gear + 48;
         if (simdata->gear == 0) {
-            gear = 'N';
+            gear[0] = 'N';
         }
         if (simdata->gear < 0) {
-            gear = 'R';
+            gear[0] = 'R';
         }
+        gear[1] = '\0';
 
         char numlaps[4];
         char numcars[4];
@@ -326,7 +328,7 @@ int looper()
         FT_Library ft_font96;
         if (init_ft ("./font.ttf", &face_font96, &ft_font96, 96, &error))
         {
-            draw_string_on_fb(face_font96, ft_font96, pixels, xres/2 - (xres*.025), yres/2 - (yres*0), pal16[16], &gear);
+            draw_string_on_fb(face_font96, ft_font96, pixels, xres/2 - (xres*.025), yres/2 - (yres*0), pal16[16], gear);
         }
 
         gfx_swapbuffers();
