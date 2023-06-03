@@ -35,6 +35,11 @@ make
 ```
 FBDEV=/dev/fb1 FBROTATE=1 ./simlcd
 ```
+Currently this is hardcoded to find a font file in the directory you run simlcd from called "font.ttf". Copy it from the fbgfx directory after retrieving the submodules.
+
+```
+cp ./src/simlcd/fbgfx/font.ttf ./build
+```
 
 ## ToDo
  - much, much more
