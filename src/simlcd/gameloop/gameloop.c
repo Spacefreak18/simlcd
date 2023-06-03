@@ -301,19 +301,19 @@ int looper()
         FT_Library ft_font32;
         if (init_ft ("./font.ttf", &face_font32, &ft_font32, 32, &error))
         {
-            draw_string_on_fb(face_font32, ft_font32, pixels, 10, 10, pal16[16], "Lap: ");
-            draw_string_on_fb(face_font32, ft_font32, pixels, 80, 10, pal16[16], lap);
-            draw_string_on_fb(face_font32, ft_font32, pixels, 136, 10, pal16[16], " / ");
-            draw_string_on_fb(face_font32, ft_font32, pixels, 160, 10, pal16[16], numlaps);
+            draw_string_on_fb(face_font32, ft_font32, pixels, 10, 25, pal16[16], "Lap: ");
+            draw_string_on_fb(face_font32, ft_font32, pixels, 80, 25, pal16[16], lap);
+            draw_string_on_fb(face_font32, ft_font32, pixels, 136, 25, pal16[16], " / ");
+            draw_string_on_fb(face_font32, ft_font32, pixels, 160, 25, pal16[16], numlaps);
 
-            draw_string_on_fb(face_font32, ft_font32, pixels, 600, 10, pal16[16], "Pos: ");
-            draw_string_on_fb(face_font32, ft_font32, pixels, 670, 10, pal16[16], pos);
-            draw_string_on_fb(face_font32, ft_font32, pixels, 726, 10, pal16[16], " / ");
-            draw_string_on_fb(face_font32, ft_font32, pixels, 750, 10, pal16[16], numcars);
+            draw_string_on_fb(face_font32, ft_font32, pixels, 600, 25, pal16[16], "Pos: ");
+            draw_string_on_fb(face_font32, ft_font32, pixels, 670, 25, pal16[16], pos);
+            draw_string_on_fb(face_font32, ft_font32, pixels, 726, 25, pal16[16], " / ");
+            draw_string_on_fb(face_font32, ft_font32, pixels, 750, 25, pal16[16], numcars);
         }
         if (init_ft ("./font.ttf", &face_font32, &ft_font32, 32, &error))
         {
-            draw_string_on_fb(face_font32, ft_font32, pixels, 30, 200, pal16[17], "Fuel: ");
+            draw_string_on_fb(face_font32, ft_font32, pixels, 30, 210, pal16[17], "Fuel: ");
         }
 
 
