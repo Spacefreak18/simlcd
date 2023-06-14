@@ -288,11 +288,11 @@ int looper()
 
 
         char gear[2];
-        gear[0] = simdata->gear + 48;
-        if (simdata->gear == 0) {
+        gear[0] = simdata->gear + 47;
+        if (simdata->gear == 1) {
             gear[0] = 'N';
         }
-        if (simdata->gear < 0) {
+        if (simdata->gear < 1) {
             gear[0] = 'R';
         }
         gear[1] = '\0';
