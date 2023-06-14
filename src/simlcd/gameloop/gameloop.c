@@ -250,14 +250,26 @@ int looper()
     char ch;
     struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
 
+    char* err = NULL;
+    FT_Face face_font32;
+    FT_Library ft_font32;
+    init_ft("./font.ttf", &face_font32, &ft_font32, 32, &err);
+
+    FT_Face face_font48;
+    FT_Library ft_font48;
+    init_ft("./font.ttf", &face_font48, &ft_font48, 48, &err);
+
+    FT_Face face_font96;
+    FT_Library ft_font96;
+    init_ft("./font.ttf", &face_font96, &ft_font96, 96, &err);
+
     while (go) {
-	float theta;
-    	time_t now;
+    	//time_t now;
     	struct tm tm;
     	int ox, oy, cx, cy;
     	int r;
     	int i;
-    	char date[40];
+    	//char date[40];
 
     	ox = xres / 2;
     	oy = yres / 2;
@@ -266,13 +278,14 @@ int looper()
 
 
         simdatamap(simdata, simmap, 1);
-        time(&now);
-        tm = *localtime(&now);
+        //time(&now);
+        //tm = *localtime(&now);
 
 
         gfx_clear(pixels, pixels_len);
 
-        strftime(date, sizeof(date), "%Y.%m.%d", &tm);
+        //strftime(date, sizeof(date), "%Y.%m.%d", &tm);
+
 
         char gear[2];
         gear[0] = simdata->gear + 48;
@@ -283,6 +296,7 @@ int looper()
             gear[0] = 'R';
         }
         gear[1] = '\0';
+        UTF32 gear2[2] = {gear[0], 0};
 
         char numlaps[4];
         char numcars[4];
@@ -296,10 +310,13 @@ int looper()
         sprintf(lap, "%03d", simdata->lap);
         sprintf(pos, "%03d", simdata->position);
 
-        char* error = NULL;
-        FT_Face face_font32;
-        FT_Library ft_font32;
-        if (init_ft ("./font.ttf", &face_font32, &ft_font32, 32, &error))
+        numlaps[3] = '\0';
+        numcars[3] = '\0';
+        pos[3] = '\0';
+        lap[3] = '\0';
+        rpm[5] = '\0';
+
+
         {
             draw_string_on_fb(face_font32, ft_font32, pixels, 10, 25, pal16[16], "Lap: ");
             draw_string_on_fb(face_font32, ft_font32, pixels, 80, 25, pal16[16], lap);
@@ -311,22 +328,15 @@ int looper()
             draw_string_on_fb(face_font32, ft_font32, pixels, 726, 25, pal16[16], " / ");
             draw_string_on_fb(face_font32, ft_font32, pixels, 750, 25, pal16[16], numcars);
         }
-        if (init_ft ("./font.ttf", &face_font32, &ft_font32, 32, &error))
+
         {
             draw_string_on_fb(face_font32, ft_font32, pixels, 30, 210, pal16[17], "Fuel: ");
         }
 
-
-        FT_Face face_font48;
-        FT_Library ft_font48;
-        if (init_ft ("./font.ttf", &face_font48, &ft_font48, 48, &error))
         {
             draw_string_on_fb(face_font48, ft_font48, pixels, xres/2 - (xres*.06125), yres/2 - (yres*.30), pal16[16], rpm);
         }
 
-        FT_Face face_font96;
-        FT_Library ft_font96;
-        if (init_ft ("./font.ttf", &face_font96, &ft_font96, 96, &error))
         {
             draw_string_on_fb(face_font96, ft_font96, pixels, xres/2 - (xres*.025), yres/2 - (yres*0), pal16[16], gear);
         }
@@ -343,11 +353,19 @@ int looper()
     	}
     }
 
+    done_ft(ft_font32);
+
+    done_ft(ft_font48);
+
+    done_ft(ft_font96);
 
     gfx_clear(pixels, pixels_len);
     gfx_swapbuffers();
 
     tcsetattr(0, TCSANOW, &canonicalmode);
     gfx_close();
+
+    free(simdata);
+    free(simmap);
 }
 
