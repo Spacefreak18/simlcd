@@ -1,16 +1,24 @@
 #ifndef _PARAMETERS_H
 #define _PARAMETERS_H
 
+#include <stdbool.h>
+#include "../simulatorapi/simapi/simapi/simapi.h"
+
 typedef struct
 {
     int   program_action;
-    const char* sim_string;
-    const char* save_file;
-    int max_revs;
-    int granularity;
+    char* sim_string;
+    char* config_path;
     int verbosity_count;
+    int fonts_length;
+
+    Simulator sim;
+    bool simon;
 }
 Parameters;
+
+
+
 
 typedef enum
 {
@@ -30,6 +38,7 @@ typedef enum
 ConfigError;
 
 ConfigError getParameters(int argc, char** argv, Parameters* p);
+int freeparams(Parameters* p);
 
 struct _errordesc
 {

@@ -28,7 +28,7 @@ add_subdirectory(src/simlcd/slog)
 
 add_executable(simlcd src/simlcd/simlcd.c)
 target_include_directories(simlcd PUBLIC config ${FREETYPE_INCLUDE_DIR})
-target_link_libraries(simlcd m argtable2 config gameloop helper slog simulatorapi fbgfx freetype)
+target_link_libraries(simlcd xdg-basedir m argtable2 config gameloop helper slog simulatorapi fbgfx freetype)
 
 
 # used for enabling additional compiler options if supported

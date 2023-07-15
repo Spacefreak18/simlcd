@@ -1,2 +1,7 @@
+#include "../helper/confighelper.h"
+#include "../helper/parameters.h"
 
-int looper ();
+struct ftinfo;
+
+
+int looper (FontInfo* fi, int fonts, Parameters* p);

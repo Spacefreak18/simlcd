@@ -11,7 +11,49 @@
 #include <unistd.h>
 #include <time.h>
 
+
 #include <string.h>
+
+
+
+#include "../slog/slog.h"
+
+void create_dir(char* dir)
+{
+    struct stat st = {0};
+    if (stat(dir, &st) == -1)
+    {
+        mkdir(dir, 0700);
+    }
+}
+
+char* create_user_dir(char* dirtype, char* programpath)
+{
+    char* home_dir_str = gethome();
+    // +3 for slashes
+    char* config_dir_str = malloc(4 + strlen(home_dir_str) + strlen(dirtype) + strlen("programpath"));
+    size_t ss = (4 + strlen(home_dir_str) + strlen(dirtype) + strlen("programpath"));
+
+    snprintf (config_dir_str, ss, "%s/%s/%s/", home_dir_str, dirtype, programpath);
+
+    create_dir(config_dir_str);
+    return config_dir_str;
+}
+
+
+char* get_config_file(const char* confpath, xdgHandle* xdg)
+{
+    if ((confpath != NULL) && (strcmp(confpath, "") != 0))
+    {
+        slogw("Using custom config path %s", confpath);
+        return strdup(confpath);
+    }
+
+    const char* relpath = "simlcd/simlcd.config";
+    char* confpath1 = xdgConfigFind(relpath, xdg);
+    slogi("config path is %s", confpath1);
+    return confpath1;
+}
 
 char* gethome()
 {

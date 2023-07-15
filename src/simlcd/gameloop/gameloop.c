@@ -27,9 +27,16 @@ size_t pixels_len, rowbytes;
 unsigned char* pixels;
 unsigned xres, yres;
 
+struct fttinfo
+{
+    FT_Face ft_face;
+    FT_Library ft_library;
+};
+
 gfx_color_t pal16[18];
 
 #define DEFAULT_UPDATE_RATE      60.0
+#define SIM_CHECK_RATE           1
 
 /******************************************************************************/
 
@@ -45,155 +52,6 @@ gfx_color_t pal16[18];
 /******************************************************************************/
 
 
-int showstats(SimData* simdata)
-{
-    printf("\r");
-    for (int i=0; i<4; i++)
-    {
-        if (i==0)
-        {
-            fputc('s', stdout);
-            fputc('p', stdout);
-            fputc('e', stdout);
-            fputc('e', stdout);
-            fputc('d', stdout);
-            fputc(':', stdout);
-            fputc(' ', stdout);
-
-            int speed = simdata->velocity;
-            int digits = 0;
-            if (speed > 0)
-            {
-                while (speed > 0)
-                {
-                    int mod = speed % 10;
-                    speed = speed / 10;
-                    digits++;
-                }
-                speed = simdata->velocity;
-                int s[digits];
-                int digit = 0;
-                while (speed > 0)
-                {
-                    int mod = speed % 10;
-                    s[digit] = mod;
-                    speed = speed / 10;
-                    digit++;
-                }
-                speed = simdata->velocity;
-                digit = digits;
-                while (digit > 0)
-                {
-                    fputc(s[digit-1]+'0', stdout);
-                    digit--;
-                }
-            }
-            else
-            {
-                fputc('0', stdout);
-            }
-            fputc(' ', stdout);
-        }
-        if (i==1)
-        {
-            fputc('r', stdout);
-            fputc('p', stdout);
-            fputc('m', stdout);
-            fputc('s', stdout);
-            fputc(':', stdout);
-            fputc(' ', stdout);
-
-            int rpms = simdata->rpms;
-            int digits = 0;
-            if (rpms > 0)
-            {
-                while (rpms > 0)
-                {
-                    int mod = rpms % 10;
-                    rpms = rpms / 10;
-                    digits++;
-                }
-                rpms = simdata->rpms;
-                int s[digits];
-                int digit = 0;
-                while (rpms > 0)
-                {
-                    int mod = rpms % 10;
-                    s[digit] = mod;
-                    rpms = rpms / 10;
-                    digit++;
-                }
-                rpms = simdata->rpms;
-                digit = digits;
-                while (digit > 0)
-                {
-                    fputc(s[digit-1]+'0', stdout);
-                    digit--;
-                }
-            }
-            else
-            {
-                fputc('0', stdout);
-            }
-            fputc(' ', stdout);
-        }
-        if (i==2)
-        {
-            fputc('g', stdout);
-            fputc('e', stdout);
-            fputc('a', stdout);
-            fputc('r', stdout);
-            fputc(':', stdout);
-            fputc(' ', stdout);
-            fputc(simdata->gear+'0', stdout);
-            fputc(' ', stdout);
-        }
-        if (i==3)
-        {
-            fputc('a', stdout);
-            fputc('l', stdout);
-            fputc('t', stdout);
-            fputc(':', stdout);
-            fputc(' ', stdout);
-
-            int alt = simdata->altitude;
-            int digits = 0;
-            if (alt > 0)
-            {
-                while (alt > 0)
-                {
-                    int mod = alt % 10;
-                    alt = alt / 10;
-                    digits++;
-                }
-                alt = simdata->altitude;
-                int s[digits];
-                int digit = 0;
-                while (alt > 0)
-                {
-                    int mod = alt % 10;
-                    s[digit] = mod;
-                    alt = alt / 10;
-                    digit++;
-                }
-                alt = simdata->altitude;
-                digit = digits;
-                while (digit > 0)
-                {
-                    fputc(s[digit-1]+'0', stdout);
-                    digit--;
-                }
-            }
-            else
-            {
-                fputc('0', stdout);
-            }
-            fputc(' ', stdout);
-        }
-    }
-    fflush(stdout);
-}
-
 void sighandler(int signum, siginfo_t* info, void* ptr)
 {
     go = false;
@@ -204,7 +62,10 @@ void sighandler(int signum, siginfo_t* info, void* ptr)
 
 struct sigaction act;
 
-int looper()
+
+
+
+int clilooper(FontInfo* fi, int fonts, SimData* simdata, SimMap* simmap, int sim)
 {
     memset(&act, 0, sizeof(act));
     act.sa_sigaction = sighandler;
@@ -213,9 +74,7 @@ int looper()
     sigaction(SIGINT, &act, NULL);
     sigaction(SIGTSTP, &act, NULL);
 
-    SimData* simdata = malloc(sizeof(SimData));
-    SimMap* simmap = malloc(sizeof(SimMap));
-    int error = siminit(simdata, simmap, 1);
+
 
     if (gfx_open(&xres, &yres, &rowbytes))
     {
@@ -251,6 +110,12 @@ int looper()
     struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
 
     char* err = NULL;
+    //struct fttinfo* ft = malloc(sizeof(struct fttinfo) * fonts);
+    //for (int j = 0; j < fonts; j++)
+    //{
+    //    init_ft(fi[j].name, &ft[j].ft_face, &ft[j].ft_library, fi[j].size, &err);
+    //}
+
     FT_Face face_font32;
     FT_Library ft_font32;
     init_ft("./font.ttf", &face_font32, &ft_font32, 32, &err);
@@ -277,7 +142,7 @@ int looper()
     	r = MIN(xres, yres) * 2 / 3 / 2;
 
 
-        simdatamap(simdata, simmap, 1);
+        simdatamap(simdata, simmap, sim);
         //time(&now);
         //tm = *localtime(&now);
 
@@ -369,3 +234,65 @@ int looper()
     free(simmap);
 }
 
+int looper(FontInfo* fi, int fonts, Parameters* p)
+{
+    SimData* simdata = malloc(sizeof(SimData));
+    SimMap* simmap = malloc(sizeof(SimMap));
+
+    struct termios newsettings, canonicalmode;
+    tcgetattr(0, &canonicalmode);
+    newsettings = canonicalmode;
+    newsettings.c_lflag &= (~ICANON & ~ECHO);
+    newsettings.c_cc[VMIN] = 1;
+    newsettings.c_cc[VTIME] = 0;
+    tcsetattr(0, TCSANOW, &newsettings);
+    char ch;
+    struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
+
+    fprintf(stdout, "Searching for sim data... Press q to quit...\n");
+
+    p->simon = false;
+    double update_rate = SIM_CHECK_RATE;
+    int go = true;
+
+    while (go == true)
+    {
+
+
+
+
+        if (p->simon == false)
+        {
+            getSim(simdata, simmap, &p->simon, &p->sim);
+        }
+
+        if (p->simon == true)
+        {
+            clilooper(fi, fonts, simdata, simmap, p->sim);
+        }
+        if (p->simon == true)
+        {
+            p->simon = false;
+            fprintf(stdout, "Searching for sim data... Press q again to quit...\n");
+            sleep(2);
+        }
+
+        if( poll(&mypoll, 1, 1000.0/update_rate) )
+        {
+            scanf("%c", &ch);
+            if(ch == 'q')
+            {
+                go = false;
+            }
+        }
+    }
+
+    fprintf(stdout, "\n");
+    fflush(stdout);
+    tcsetattr(0, TCSANOW, &canonicalmode);
+
+    free(simdata);
+    free(simmap);
+
+    return 0;
+}

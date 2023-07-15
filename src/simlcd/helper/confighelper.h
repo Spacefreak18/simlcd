@@ -30,15 +30,6 @@ DeviceSubType;
 
 typedef enum
 {
-    SIMULATOR_SIMLCD_TEST    = 0,
-    SIMULATOR_ASSETTO_CORSA     = 1,
-    SIMULATOR_RFACTOR           = 2,
-    SIMULATOR_RFACTOR2          = 3
-}
-Simulator;
-
-typedef enum
-{
     SIMULATOR_UPDATE_DEFAULT    = 0,
     SIMULATOR_UPDATE_RPMS       = 1,
     SIMULATOR_UPDATE_GEAR       = 2,
@@ -69,6 +60,13 @@ SimlcdSettings;
 typedef struct
 {
     int size;
+    char* name;
+}
+FontInfo;
+
+typedef struct
+{
+    int size;
     bool use_pulses;
     int granularity;
     uint32_t* rpms_array;
@@ -94,8 +92,8 @@ DeviceSettings;
 
 int strtogame(const char* game, SimlcdSettings* ms);
 
-int devsetup(const char* device_type, const char* device_subtype, const char* config_files, SimlcdSettings* ms, DeviceSettings* ds, config_setting_t* device_settings);
+int configcheck(const char* config_file_str, int* fonts);
 
-int settingsfree(DeviceSettings ds);
+int loadconfig(const char* config_file_str, Parameters* p, FontInfo* fi);
 
 #endif
