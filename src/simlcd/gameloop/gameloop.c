@@ -36,7 +36,7 @@ struct fttinfo
 
 gfx_color_t pal16[18];
 
-#define DEFAULT_UPDATE_RATE      60.0
+#define DEFAULT_UPDATE_RATE      30.0
 #define SIM_CHECK_RATE           1
 
 /******************************************************************************/
@@ -77,36 +77,17 @@ int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widget
 
 
 
-    if (gfx_open(&xres, &yres, &rowbytes))
-    {
-        return 1;
-    }
-
-    if (gfx_setbpp(16, &rowbytes))
-    {
-        return 1;
-    }
 
 
-    draw_init(16);
+    //pal_init();
 
-    pixels = gfx_buffer(&pixels_len);
-    if (!pixels)
-    {
-        return 1;
-    }
-
-    gfx_clear(pixels, pixels_len);
-
-    pal_init();
-
-    struct termios newsettings, canonicalmode;
-    tcgetattr(0, &canonicalmode);
-    newsettings = canonicalmode;
-    newsettings.c_lflag &= (~ICANON & ~ECHO);
-    newsettings.c_cc[VMIN] = 1;
-    newsettings.c_cc[VTIME] = 0;
-    tcsetattr(0, TCSANOW, &newsettings);
+    //struct termios newsettings, canonicalmode;
+    //tcgetattr(0, &canonicalmode);
+    //newsettings = canonicalmode;
+    //newsettings.c_lflag &= (~ICANON & ~ECHO);
+    //newsettings.c_cc[VMIN] = 1;
+    //newsettings.c_cc[VTIME] = 0;
+    //tcsetattr(0, TCSANOW, &newsettings);
     char ch;
     struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
 
@@ -117,8 +98,8 @@ int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widget
         init_ft(fi[j].name, &ft[j].ft_face, &ft[j].ft_library, fi[j].size, &err);
     }
 
-
-    while (go) {
+    bool go2 = true;
+    while (go2 == true && simdata->simstatus > 1) {
     	//time_t now;
     	struct tm tm;
     	int ox, oy, cx, cy;
@@ -223,12 +204,12 @@ int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widget
 
         gfx_swapbuffers();
 
-    	if( poll(&mypoll, 1, 1000.0/30) )
+    	if( poll(&mypoll, 1, 1000.0/DEFAULT_UPDATE_RATE) )
     	{
     	    scanf("%c", &ch);
     	    if(ch == 'q')
     	    {
-    	        go = false;
+    	        go2 = false;
     	    }
     	}
     }
@@ -240,16 +221,31 @@ int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widget
     }
 
 
-    gfx_clear(pixels, pixels_len);
-    gfx_swapbuffers();
-
-    tcsetattr(0, TCSANOW, &canonicalmode);
-    gfx_close();
 
 }
 
 int looper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, Parameters* p)
 {
+    if (gfx_open(&xres, &yres, &rowbytes))
+    {
+        return 1;
+    }
+
+    if (gfx_setbpp(16, &rowbytes))
+    {
+        return 1;
+    }
+
+
+    draw_init(16);
+
+    pixels = gfx_buffer(&pixels_len);
+    if (!pixels)
+    {
+        return 1;
+    }
+
+    gfx_clear(pixels, pixels_len);
     SimData* simdata = malloc(sizeof(SimData));
     SimMap* simmap = malloc(sizeof(SimMap));
 
@@ -280,11 +276,14 @@ int looper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, 
 
         if (p->simon == true)
         {
+            slogi("why are you here");
             clilooper(fi, fonts, simlcdwidgets, widgets, simdata, simmap, p->sim);
         }
         if (p->simon == true)
         {
             p->simon = false;
+            gfx_clear(pixels, pixels_len);
+            gfx_swapbuffers();
             fprintf(stdout, "Searching for sim data... Press q again to quit...\n");
             sleep(2);
         }
@@ -303,6 +302,12 @@ int looper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, 
     fflush(stdout);
     tcsetattr(0, TCSANOW, &canonicalmode);
 
+
+    gfx_clear(pixels, pixels_len);
+    gfx_swapbuffers();
+
+    //tcsetattr(0, TCSANOW, &canonicalmode);
+    gfx_close();
     free(simdata);
     free(simmap);
 
