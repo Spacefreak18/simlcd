@@ -15,25 +15,16 @@
 int main(int argc, char** argv)
 {
     Parameters* p = malloc(sizeof(Parameters));
-    //SimlcdSettings* ms = malloc(sizeof(SimlcdSettings));;
 
     ConfigError ppe = getParameters(argc, argv, p);
     if (ppe == E_SUCCESS_AND_EXIT)
     {
         goto cleanup_final;
     }
-    //ms->program_action = p->program_action;
 
     char* home_dir_str = gethome();
     char* configdir = create_user_dir(".config", "simlcd");
     char* cachedir = create_user_dir(".local/share", "simlcd");
-    ////char* config_file_str = ( char* ) malloc(1 + strlen(home_dir_str) + strlen("/.config/") + strlen("simlcd/simlcd.configchar* cache_dir_str = ( char* ) malloc(1 + strlen(home_dir_str) + strlen("/.cache/simlcd/"));
-    //char* cache_dir_str = ( char* ) malloc(1 + strlen(home_dir_str) + strlen("/.cache/simlcd/"));
-    ////strcat(config_file_str, "/.config/");
-    //strcpy(cache_dir_str, home_dir_str);
-    //strcat(cache_dir_str, "/.cache/simlcd/");
-    ////strcat(config_file_str, "simlcd/simlcd.config");
-
     slog_config_t slgCfg;
     slog_config_get(&slgCfg);
     slgCfg.eColorFormat = SLOG_COLORING_TAG;
@@ -62,39 +53,41 @@ int main(int argc, char** argv)
         slogf("Function xdgInitHandle() failed, is $HOME unset?");
     }
     char* config_file_str = get_config_file(p->config_path, &xdg);
-
+    char* font_path = get_dir_with_default(p->font_path, "/usr/share/fonts/TTF");
 
     int fonts = 0;
-    configcheck(config_file_str, &fonts);
-    slogi("found %i fonts", fonts);
-    FontInfo* fi = malloc(sizeof(FontInfo) * 2);
-    loadconfig(config_file_str, p, fi);
+    int widgets = 0;
+    configcheck(config_file_str, &fonts, &widgets);
+    FontInfo* fi = malloc(sizeof(FontInfo) * fonts);
+    SimlcdUIWidget* simlcdwidgets = malloc(sizeof(SimlcdUIWidget) * widgets);
+    loadconfig(config_file_str, p, fi, simlcdwidgets, font_path);
 
     free(config_file_str);
-    //free(cache_dir_str);
     xdgWipeHandle(&xdg);
 
     slogi("starting visuals");
 
-    for (int j = 0; j < fonts; j++)
-    {
-        slogi("fount font %s", fi[j].name);
-    }
-    looper(fi, fonts, p);
+    looper(fi, fonts, simlcdwidgets, widgets, p);
+
     for (int j = 0; j < fonts; j++)
     {
         free(fi[j].name);
     }
     free(fi);
+    for (int j = 0; j < fonts; j++)
+    {
+        if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_STATICTEXT)
+        {
+            free(simlcdwidgets[j].text);
+        }
+    }
+    free(simlcdwidgets);
 
 
 configcleanup:
-    //config_destroy(&cfg);
 
 cleanup_final:
     freeparams(p);
-    //free(ms);
-    //free(p);
 
     free(configdir);
     free(cachedir);

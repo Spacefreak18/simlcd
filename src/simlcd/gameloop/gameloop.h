@@ -4,4 +4,4 @@
 struct ftinfo;
 
 
-int looper (FontInfo* fi, int fonts, Parameters* p);
+int looper (FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, Parameters* p);

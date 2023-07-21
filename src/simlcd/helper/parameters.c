@@ -15,6 +15,10 @@ int freeparams(Parameters* p)
     {
         free(p->config_path);
     }
+    if (p->font_path != NULL)
+    {
+        free(p->font_path);
+    }
     return 0;
 }
 
@@ -34,6 +38,7 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
 
     struct arg_rex* cmd1             = arg_rex1(NULL, NULL, "play", NULL, REG_ICASE, NULL);
     struct arg_str* arg_cpath        = arg_strn("c", "configpath", "<path of config>", 0, 1, NULL);
+    struct arg_str* arg_fpath        = arg_strn("f", "fontpath", "<path of fonts>", 0, 1, NULL);
     struct arg_str* arg_sim          = arg_strn("s", "sim", "<gamename>", 0, 1, NULL);
     struct arg_lit* help             = arg_litn(NULL,"help", 0, 1, "print this help and exit");
     struct arg_lit* vers             = arg_litn(NULL,"version", 0, 1, "print version information and exit");
@@ -59,6 +64,10 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
         if (arg_cpath->sval[0] != NULL)
         {
             p->config_path = strdup(arg_cpath->sval[0]);
+        }
+        if (arg_fpath->sval[0] != NULL)
+        {
+            p->font_path = strdup(arg_fpath->sval[0]);
         }
         exitcode = E_SUCCESS_AND_DO;
     }

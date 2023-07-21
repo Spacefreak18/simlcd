@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,7 +66,7 @@ struct sigaction act;
 
 
 
-int clilooper(FontInfo* fi, int fonts, SimData* simdata, SimMap* simmap, int sim)
+int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, SimData* simdata, SimMap* simmap, int sim)
 {
     memset(&act, 0, sizeof(act));
     act.sa_sigaction = sighandler;
@@ -110,23 +111,12 @@ int clilooper(FontInfo* fi, int fonts, SimData* simdata, SimMap* simmap, int sim
     struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
 
     char* err = NULL;
-    //struct fttinfo* ft = malloc(sizeof(struct fttinfo) * fonts);
-    //for (int j = 0; j < fonts; j++)
-    //{
-    //    init_ft(fi[j].name, &ft[j].ft_face, &ft[j].ft_library, fi[j].size, &err);
-    //}
+    struct fttinfo* ft = malloc(sizeof(struct fttinfo) * fonts);
+    for (int j = 0; j < fonts; j++)
+    {
+        init_ft(fi[j].name, &ft[j].ft_face, &ft[j].ft_library, fi[j].size, &err);
+    }
 
-    FT_Face face_font32;
-    FT_Library ft_font32;
-    init_ft("./font.ttf", &face_font32, &ft_font32, 32, &err);
-
-    FT_Face face_font48;
-    FT_Library ft_font48;
-    init_ft("./font.ttf", &face_font48, &ft_font48, 48, &err);
-
-    FT_Face face_font96;
-    FT_Library ft_font96;
-    init_ft("./font.ttf", &face_font96, &ft_font96, 96, &err);
 
     while (go) {
     	//time_t now;
@@ -181,30 +171,55 @@ int clilooper(FontInfo* fi, int fonts, SimData* simdata, SimMap* simmap, int sim
         lap[3] = '\0';
         rpm[5] = '\0';
 
-
+        for (int j = 0; j < widgets; j++)
         {
-            draw_string_on_fb(face_font32, ft_font32, pixels, 10, 25, pal16[16], "Lap: ");
-            draw_string_on_fb(face_font32, ft_font32, pixels, 80, 25, pal16[16], lap);
-            draw_string_on_fb(face_font32, ft_font32, pixels, 136, 25, pal16[16], " / ");
-            draw_string_on_fb(face_font32, ft_font32, pixels, 160, 25, pal16[16], numlaps);
 
-            draw_string_on_fb(face_font32, ft_font32, pixels, 600, 25, pal16[16], "Pos: ");
-            draw_string_on_fb(face_font32, ft_font32, pixels, 670, 25, pal16[16], pos);
-            draw_string_on_fb(face_font32, ft_font32, pixels, 726, 25, pal16[16], " / ");
-            draw_string_on_fb(face_font32, ft_font32, pixels, 750, 25, pal16[16], numcars);
+            char* tempstr;
+            bool draw = false;
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_GEAR)
+            {
+                tempstr = gear;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_RPMS)
+            {
+                tempstr = rpm;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_POSITION)
+            {
+                tempstr = pos;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_NUMCARS)
+            {
+                tempstr = numcars;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_LAP)
+            {
+                tempstr = lap;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_LAPS)
+            {
+                tempstr = numlaps;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_STATICTEXT)
+            {
+                tempstr = simlcdwidgets[j].text;
+                draw = true;
+            }
+            if (draw == true)
+            {
+                draw_string_on_fb(
+                        ft[simlcdwidgets[j].fontid].ft_face, ft[simlcdwidgets[j].fontid].ft_library, pixels, 
+                        simlcdwidgets[j].xpos, simlcdwidgets[j].ypos,
+                        gfx_rgb(simlcdwidgets[j].red,simlcdwidgets[j].green,simlcdwidgets[j].blue), tempstr);
+            }
         }
 
-        {
-            draw_string_on_fb(face_font32, ft_font32, pixels, 30, 210, pal16[17], "Fuel: ");
-        }
-
-        {
-            draw_string_on_fb(face_font48, ft_font48, pixels, xres/2 - (xres*.06125), yres/2 - (yres*.30), pal16[16], rpm);
-        }
-
-        {
-            draw_string_on_fb(face_font96, ft_font96, pixels, xres/2 - (xres*.025), yres/2 - (yres*0), pal16[16], gear);
-        }
 
         gfx_swapbuffers();
 
@@ -218,11 +233,12 @@ int clilooper(FontInfo* fi, int fonts, SimData* simdata, SimMap* simmap, int sim
     	}
     }
 
-    done_ft(ft_font32);
+    
+    for (int j = 0; j < fonts; j++)
+    {
+        done_ft(ft[j].ft_library);
+    }
 
-    done_ft(ft_font48);
-
-    done_ft(ft_font96);
 
     gfx_clear(pixels, pixels_len);
     gfx_swapbuffers();
@@ -230,11 +246,9 @@ int clilooper(FontInfo* fi, int fonts, SimData* simdata, SimMap* simmap, int sim
     tcsetattr(0, TCSANOW, &canonicalmode);
     gfx_close();
 
-    free(simdata);
-    free(simmap);
 }
 
-int looper(FontInfo* fi, int fonts, Parameters* p)
+int looper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, Parameters* p)
 {
     SimData* simdata = malloc(sizeof(SimData));
     SimMap* simmap = malloc(sizeof(SimMap));
@@ -259,8 +273,6 @@ int looper(FontInfo* fi, int fonts, Parameters* p)
     {
 
 
-
-
         if (p->simon == false)
         {
             getSim(simdata, simmap, &p->simon, &p->sim);
@@ -268,7 +280,7 @@ int looper(FontInfo* fi, int fonts, Parameters* p)
 
         if (p->simon == true)
         {
-            clilooper(fi, fonts, simdata, simmap, p->sim);
+            clilooper(fi, fonts, simlcdwidgets, widgets, simdata, simmap, p->sim);
         }
         if (p->simon == true)
         {

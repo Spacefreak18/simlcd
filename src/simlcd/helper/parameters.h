@@ -9,8 +9,10 @@ typedef struct
     int   program_action;
     char* sim_string;
     char* config_path;
+    char* font_path;
     int verbosity_count;
     int fonts_length;
+    int widgets_length;
 
     Simulator sim;
     bool simon;

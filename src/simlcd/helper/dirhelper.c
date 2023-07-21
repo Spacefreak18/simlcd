@@ -55,6 +55,18 @@ char* get_config_file(const char* confpath, xdgHandle* xdg)
     return confpath1;
 }
 
+
+char* get_dir_with_default(const char* dirpath, char* defaultpath)
+{
+    if ((dirpath != NULL) && (strcmp(dirpath, "") != 0))
+    {
+        slogw("Using custom config path %s", dirpath);
+        return strdup(dirpath);
+    }
+
+    return defaultpath;
+}
+
 char* gethome()
 {
     char* homedir = getenv("HOME");

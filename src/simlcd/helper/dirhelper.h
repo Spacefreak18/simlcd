@@ -13,5 +13,6 @@ bool does_directory_exist(char* path, char* dirname);
 void restrict_folders_to_cache(char* path, int cachesize);
 void delete_dir(char* path);
 char* get_config_file(const char* confpath, xdgHandle* xdg);
+char* get_dir_with_default(const char* dirpath, char* defaultpath);
 
 #endif

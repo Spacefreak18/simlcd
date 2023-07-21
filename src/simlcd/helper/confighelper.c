@@ -20,35 +20,51 @@ int strcicmp(char const *a, char const *b)
     }
 }
 
-
-int strtogame(const char* game, SimlcdSettings* ms)
+int getsubtype(char const *a)
 {
-    slogd("Checking for %s in list of supported simulators.", game);
-    if (strcicmp(game, "ac") == 0)
+    int r = SIMLCD_TEXTWIDGET_STATICTEXT;
+
+    r = strcicmp("gear", a);
+    if (r == 0)
     {
-        slogd("Setting simulator to Assetto Corsa");
-        ms->sim_name = SIMULATOR_ASSETTO_CORSA;
+        return SIMLCD_TEXTWIDGET_GEAR;
     }
-    else if (strcicmp(game, "rf2") == 0)
+
+    r = strcicmp("rpm", a);
+    if (r == 0)
     {
-        slogd("Setting simulator to RFactor 2");
-        ms->sim_name = SIMULATOR_RFACTOR2;
+        return SIMLCD_TEXTWIDGET_RPMS;
     }
-    else
-        if (strcicmp(game, "test") == 0)
-        {
-            slogd("Setting simulator to Test Data");
-            ms->sim_name = SIMULATOR_SIMAPI_TEST;
-        }
-        else
-        {
-            slogi("%s does not appear to be a supported simulator.", game);
-            return SIMLCD_ERROR_INVALID_SIM;
-        }
-    return SIMLCD_ERROR_NONE;
+
+    r = strcicmp("pos", a);
+    if (r == 0)
+    {
+        return SIMLCD_TEXTWIDGET_POSITION;
+    }
+    r = strcicmp("numcars", a);
+    if (r == 0)
+    {
+        return SIMLCD_TEXTWIDGET_NUMCARS;
+    }
+
+    r = strcicmp("lap", a);
+    if (r == 0)
+    {
+        return SIMLCD_TEXTWIDGET_LAP;
+    }
+
+    r = strcicmp("laps", a);
+    if (r == 0)
+    {
+        return SIMLCD_TEXTWIDGET_LAPS;
+    }
+
+    return SIMLCD_TEXTWIDGET_STATICTEXT;
 }
 
-int configcheck(const char* config_file_str, int* fonts)
+
+
+int configcheck(const char* config_file_str, int* fonts, int* widgets)
 {
     config_t cfg;
     config_init(&cfg);
@@ -57,14 +73,17 @@ int configcheck(const char* config_file_str, int* fonts)
         fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
     }
     config_setting_t* config_fonts = NULL;
+    config_setting_t* config_widgets = NULL;
     config_fonts = config_lookup(&cfg, "fonts_array");
     *fonts = config_setting_length(config_fonts);
+    config_widgets = config_lookup(&cfg, "widgets_array");
+    *widgets = config_setting_length(config_widgets);
     config_destroy(&cfg);
     return 0;
     //return cfg;
 }
 
-int loadconfig(const char* config_file_str, Parameters* p, FontInfo* fi)
+int loadconfig(const char* config_file_str, Parameters* p, FontInfo* fi, SimlcdUIWidget* simlcdwidgets, const char* fontpath)
 {
     config_t cfg;
     config_init(&cfg);
@@ -76,33 +95,64 @@ int loadconfig(const char* config_file_str, Parameters* p, FontInfo* fi)
     {
         slogi("Parsing config file");
 
+
+
+        config_setting_t* config_font = NULL;
         config_setting_t* config_fonts = NULL;
         config_fonts = config_lookup(&cfg, "fonts_array");
-        int clen = config_setting_length(config_fonts);
-        slogd("will attempt to read %i fonts", clen);
-        p->fonts_length = clen;
+        int fontslen = config_setting_length(config_fonts);
+        slogd("will attempt to read %i fonts", fontslen);
+        p->fonts_length = fontslen;
 
-        size_t a;
-        config_setting_t* config_font = NULL;
-        //for (int j = 0; j < clen; j++)
-        //{
-
-        //    const char* temp = config_setting_get_string_elem(config_fonts, j);
-        //    a += sizeof(temp) + 1;
-        //}
-        //p->fonts = malloc(a);
 
         const char* temp;
-        for (int j = 0; j < clen; j++)
+        for (int j = 0; j < fontslen; j++)
         {
             config_font = config_setting_get_elem(config_fonts, j);
 
             int found = config_setting_lookup_string(config_font, "name", &temp);
             found = config_setting_lookup_int(config_font, "size", &fi[j].size);
+            // TODO: check if these are already full paths or just don't allow full paths and check multiple paths
+            // better yet, find a library
             slogi("fount font %s", temp);
-            fi[j].name = strdup(temp);
+            size_t strzie = strlen(fontpath) + strlen(temp) + 1 + 1;
+            char* temp2 = malloc(strzie);
+            snprintf(temp2, strzie, "%s/%s", fontpath, temp);
+            fi[j].name = strdup(temp2);
+            free(temp2);
         }
-        slogi("font 0 is %s", fi[0].name);
+
+        config_setting_t* config_widget = NULL;
+        config_setting_t* config_widgets = NULL;
+        config_widgets = config_lookup(&cfg, "widgets_array");
+        int widgetslen = config_setting_length(config_widgets);
+        slogd("will attempt to read %i widgets", widgetslen);
+        p->widgets_length = widgetslen;
+
+        for (int j = 0; j < widgetslen; j++)
+        {
+            config_widget = config_setting_get_elem(config_widgets, j);
+
+            int found = config_setting_lookup_string(config_widget, "name", &temp);
+            found = config_setting_lookup_string(config_widget, "type", &temp);
+            simlcdwidgets[j].uiwidgettype = SIMLCD_UIWIDGET_TEXT;
+
+            found = config_setting_lookup_string(config_widget, "subtype", &temp);
+            simlcdwidgets[j].uiwidgetsubtype = getsubtype(temp);
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_STATICTEXT)
+            {
+                found = config_setting_lookup_string(config_widget, "text", &temp);
+                simlcdwidgets[j].text = strdup(temp);
+            }
+
+            found = config_setting_lookup_int(config_widget, "fontid", &simlcdwidgets[j].fontid);
+            found = config_setting_lookup_int(config_widget, "xpos", &simlcdwidgets[j].xpos);
+            found = config_setting_lookup_int(config_widget, "ypos", &simlcdwidgets[j].ypos);
+            found = config_setting_lookup_int(config_widget, "r", &simlcdwidgets[j].red);
+            found = config_setting_lookup_int(config_widget, "g", &simlcdwidgets[j].green);
+            found = config_setting_lookup_int(config_widget, "b", &simlcdwidgets[j].blue);
+        }
+
     }
 
 

@@ -10,37 +10,6 @@
 
 typedef enum
 {
-    SIMDEV_UNKNOWN    = 0,
-    SIMDEV_USB        = 1,
-    SIMDEV_SOUND      = 2,
-    SIMDEV_SERIAL     = 3
-}
-DeviceType;
-
-typedef enum
-{
-    SIMDEVTYPE_UNKNOWN           = 0,
-    SIMDEVTYPE_TACHOMETER        = 1,
-    SIMDEVTYPE_SHIFTLIGHTS       = 2,
-    SIMDEVTYPE_SIMWIND           = 3,
-    SIMDEVTYPE_ENGINESOUND       = 4,
-    SIMDEVTYPE_GEARSOUND         = 5
-}
-DeviceSubType;
-
-typedef enum
-{
-    SIMULATOR_UPDATE_DEFAULT    = 0,
-    SIMULATOR_UPDATE_RPMS       = 1,
-    SIMULATOR_UPDATE_GEAR       = 2,
-    SIMULATOR_UPDATE_PULSES     = 3,
-    SIMULATOR_UPDATE_VELOCITY   = 4,
-    SIMULATOR_UPDATE_ALTITUDE   = 5
-}
-SimulatorUpdate;
-
-typedef enum
-{
     SIMLCD_ERROR_NONE          = 0,
     SIMLCD_ERROR_UNKNOWN       = 1,
     SIMLCD_ERROR_INVALID_SIM   = 2,
@@ -49,6 +18,26 @@ typedef enum
     SIMLCD_ERROR_UNKNOWN_DEV   = 5
 }
 SimlcdError;
+
+typedef enum
+{
+    SIMLCD_UIWIDGET_TEXT       = 0,
+    SIMLCD_UIWIDGET_BOX        = 1,
+}
+SimlcdWidgetType;
+
+typedef enum
+{
+    SIMLCD_TEXTWIDGET_STATICTEXT = 0,
+    SIMLCD_TEXTWIDGET_RPMS       = 1,
+    SIMLCD_TEXTWIDGET_GEAR       = 2,
+    SIMLCD_TEXTWIDGET_LAP        = 3,
+    SIMLCD_TEXTWIDGET_LAPS       = 4,
+    SIMLCD_TEXTWIDGET_POSITION   = 5,
+    SIMLCD_TEXTWIDGET_NUMCARS    = 6,
+}
+SimlcdWidgetSubType;
+
 
 typedef struct
 {
@@ -66,34 +55,24 @@ FontInfo;
 
 typedef struct
 {
-    int size;
-    bool use_pulses;
-    int granularity;
-    uint32_t* rpms_array;
-    uint32_t* pulses_array;
+    SimlcdWidgetType uiwidgettype;
+    SimlcdWidgetSubType uiwidgetsubtype;
+    int fontid;
+    int xpos;
+    int ypos;
+    int red;
+    int green;
+    int blue;
+    char* text;
+    //char* name;
 }
-TachometerSettings;
+SimlcdUIWidget;
 
-typedef struct
-{
-    char* portdev;
-}
-SerialDeviceSettings;
-
-typedef struct
-{
-    bool is_valid;
-    DeviceType dev_type;
-    DeviceSubType dev_subtype;
-    TachometerSettings tachsettings;
-    SerialDeviceSettings serialdevsettings;
-}
-DeviceSettings;
 
 int strtogame(const char* game, SimlcdSettings* ms);
 
-int configcheck(const char* config_file_str, int* fonts);
+int configcheck(const char* config_file_str, int* fonts, int* widgets);
 
-int loadconfig(const char* config_file_str, Parameters* p, FontInfo* fi);
+int loadconfig(const char* config_file_str, Parameters* p, FontInfo* fi, SimlcdUIWidget* simlcdwidgets, const char* fontpath);
 
 #endif
