@@ -124,13 +124,7 @@ int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widget
 
 
         char gear[2];
-        gear[0] = simdata->gear + 47;
-        if (simdata->gear == 1) {
-            gear[0] = 'N';
-        }
-        if (simdata->gear < 1) {
-            gear[0] = 'R';
-        }
+        gear[0] = simdata->gearc;
         gear[1] = '\0';
         UTF32 gear2[2] = {gear[0], 0};
 
@@ -276,7 +270,6 @@ int looper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, 
 
         if (p->simon == true)
         {
-            slogi("why are you here");
             clilooper(fi, fonts, simlcdwidgets, widgets, simdata, simmap, p->sim);
         }
         if (p->simon == true)
