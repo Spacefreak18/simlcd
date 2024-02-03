@@ -262,13 +262,9 @@ int looper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, 
     while (go == true)
     {
 
+        getSim(simdata, simmap, &p->simon, &p->sim);
 
-        if (p->simon == false)
-        {
-            getSim(simdata, simmap, &p->simon, &p->sim);
-        }
-
-        if (p->simon == true)
+        if (p->simon == true && simdata->simstatus > 1)
         {
             clilooper(fi, fonts, simlcdwidgets, widgets, simdata, simmap, p->sim);
         }
