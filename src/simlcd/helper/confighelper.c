@@ -41,6 +41,7 @@ int getsubtype(char const *a)
     {
         return SIMLCD_TEXTWIDGET_POSITION;
     }
+
     r = strcicmp("numcars", a);
     if (r == 0)
     {
@@ -51,6 +52,30 @@ int getsubtype(char const *a)
     if (r == 0)
     {
         return SIMLCD_TEXTWIDGET_LAP;
+    }
+
+    r = strcicmp("lastlap", a);
+    if (r == 0)
+    {
+        return SIMLCD_TEXTWIDGET_LASTLAP;
+    }
+
+    r = strcicmp("bestlap", a);
+    if (r == 0)
+    {
+        return SIMLCD_TEXTWIDGET_BESTLAP;
+    }
+
+    r = strcicmp("brakebias", a);
+    if (r == 0)
+    {
+        return SIMLCD_TEXTWIDGET_BRAKEBIAS;
+    }
+
+    r = strcicmp("fuelremaining", a);
+    if (r == 0)
+    {
+        return SIMLCD_TEXTWIDGET_FUELREMAINING;
     }
 
     r = strcicmp("laps", a);

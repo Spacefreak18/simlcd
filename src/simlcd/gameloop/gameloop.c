@@ -130,21 +130,33 @@ int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widget
 
         char numlaps[4];
         char numcars[4];
+        char brakebias[6];
         char pos[4];
+        char fuel[8];
         char lap[4];
         char rpm[6];
+        char lastlap[9];
+        char bestlap[9];
 
-        sprintf(rpm, "%i", simdata->rpms);
-        sprintf(numlaps, "%03d", simdata->numlaps);
-        sprintf(numcars, "%03d", simdata->numcars);
-        sprintf(lap, "%03d", simdata->lap);
-        sprintf(pos, "%03d", simdata->position);
+        snprintf(rpm, 6, "%i", simdata->rpms);
+        snprintf(numlaps, 4, "%03d", simdata->numlaps);
+        snprintf(numcars, 4, "%03d", simdata->numcars);
+        snprintf(lap, 4, "%03d", simdata->lap);
+        snprintf(pos, 4, "%03d", simdata->position);
+        snprintf(fuel, 8, "%f", simdata->fuel);
+        snprintf(brakebias, 6, "%f", simdata->brakebias);
+        snprintf(bestlap, 9, "%d:%02d:%02d\n", simdata->bestlap.minutes, simdata->bestlap.seconds, simdata->bestlap.fraction);
+        snprintf(lastlap, 9, "%d:%02d:%02d\n", simdata->lastlap.minutes, simdata->lastlap.seconds, simdata->lastlap.fraction);
 
         numlaps[3] = '\0';
         numcars[3] = '\0';
         pos[3] = '\0';
         lap[3] = '\0';
+        fuel[7] = '\0';
+        brakebias[5] = '\0';
         rpm[5] = '\0';
+        lastlap[8] = '\0';
+        bestlap[8] = '\0';
 
         for (int j = 0; j < widgets; j++)
         {
@@ -174,6 +186,26 @@ int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widget
             if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_LAP)
             {
                 tempstr = lap;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_LASTLAP)
+            {
+                tempstr = lastlap;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_BESTLAP)
+            {
+                tempstr = bestlap;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_FUELREMAINING)
+            {
+                tempstr = fuel;
+                draw = true;
+            }
+            if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_BRAKEBIAS)
+            {
+                tempstr = brakebias;
                 draw = true;
             }
             if (simlcdwidgets[j].uiwidgetsubtype == SIMLCD_TEXTWIDGET_LAPS)
@@ -257,7 +289,7 @@ int looper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widgets, 
 
     p->simon = false;
     double update_rate = SIM_CHECK_RATE;
-    int go = true;
+    go = true;
 
     while (go == true)
     {
