@@ -126,7 +126,7 @@ int loadconfig(const char* config_file_str, Parameters* p, FontInfo* fi, SimlcdU
         config_setting_t* config_fonts = NULL;
         config_fonts = config_lookup(&cfg, "fonts_array");
         int fontslen = config_setting_length(config_fonts);
-        slogd("will attempt to read %i fonts", fontslen);
+        slogd("will attempt to read %i fonts in fontpath %s", fontslen, fontpath);
         p->fonts_length = fontslen;
 
 

@@ -43,7 +43,7 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
     struct arg_lit* help             = arg_litn(NULL,"help", 0, 1, "print this help and exit");
     struct arg_lit* vers             = arg_litn(NULL,"version", 0, 1, "print version information and exit");
     struct arg_end* end              = arg_end(20);
-    void* argtable[]                 = {cmd1,arg_sim,arg_verbosity,arg_cpath,help,vers,end};
+    void* argtable[]                 = {cmd1,arg_sim,arg_verbosity,arg_cpath,arg_fpath,help,vers,end};
     int nerrors;
 
 
