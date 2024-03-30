@@ -145,8 +145,8 @@ int clilooper(FontInfo* fi, int fonts, SimlcdUIWidget* simlcdwidgets, int widget
         snprintf(pos, 4, "%03d", simdata->position);
         snprintf(fuel, 8, "%f", simdata->fuel);
         snprintf(brakebias, 6, "%f", simdata->brakebias);
-        snprintf(bestlap, 9, "%d:%02d:%02d\n", simdata->bestlap.minutes, simdata->bestlap.seconds, simdata->bestlap.fraction);
-        snprintf(lastlap, 9, "%d:%02d:%02d\n", simdata->lastlap.minutes, simdata->lastlap.seconds, simdata->lastlap.fraction);
+        snprintf(bestlap, 9, "%d:%02d:%03d\n", simdata->bestlap.minutes, simdata->bestlap.seconds, simdata->bestlap.fraction);
+        snprintf(lastlap, 9, "%d:%02d:%03d\n", simdata->lastlap.minutes, simdata->lastlap.seconds, simdata->lastlap.fraction);
 
         numlaps[3] = '\0';
         numcars[3] = '\0';
